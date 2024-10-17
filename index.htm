@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tank Game Level Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        #editor {
+            display: grid;
+            grid-template-columns: repeat(18, 30px);
+            grid-template-rows: repeat(10, 30px);
+            gap: 1px;
+            background-color: #ccc;
+            border: 1px solid #999;
+        }
+        .tile {
+            width: 30px;
+            height: 30px;
+            background-size: cover;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        #tools {
+            margin: 20px 0;
+        }
+        button {
+            margin: 0 5px;
+            padding: 5px 10px;
+        }
+        #output {
+            width: 100%;
+            height: 200px;
+            margin-top: 20px;
+        }
+        .uneditable {
+            background-color: #888;
+            cursor: not-allowed;
+        }
+        #specialTileCount {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mini Tank Game Level Editor</h1>
+    <div id="tools">
+        <button onclick="selectTile(0)">Damaged Steel</button>
+        <button onclick="selectTile(1)">Brick</button>
+        <button onclick="selectTile(2)">Steel</button>
+        <button onclick="selectTile(3)">Rock</button>
+        <!--button onclick="selectTile(4)">Home</button-->
+        <!--span id="specialTileCount">Special Tile: 1 remaining</span-->
+        <button onclick="selectTile(-1)">Eraser</button>
+        <button onclick="exportLevel()">Export Level</button>
+        <button onclick="clearAll()">Clear All</button>
+    </div>
+    <div id="editor"></div>
+    <textarea id="output" readonly></textarea>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const output = document.getElementById('output');
+        const specialTileCountDisplay = document.getElementById('specialTileCount');
+        const tileImages = [
+            '1.jpg',
+            '2.jpg',
+            '3.jpg',
+            '4.jpg',            
+            'S.jpg',
+        ];
+        let selectedTile = 0;
+        let isDrawing = false;
+        const level = Array(10).fill().map(() => Array(18).fill(0));
+        let specialTileCount = 1;
+
+        function createTile(row, col) {
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.dataset.row = row;
+            tile.dataset.col = col;
+            
+            if ((row === 0 && (col === 0 || col === 8 || col === 17))) 
+            {
+                tile.classList.add('uneditable');
+                tile.textContent = 'X';
+            }            
+            else if (row === 9 && col === 6 ) 
+            {
+                tile.classList.add('uneditable');
+                tile.textContent = 'X';
+            } 
+            else if (row === 9 && col === 8 ) 
+            {
+                tile.classList.add('uneditable');
+                tile.textContent = 'X';
+            } 
+            else {
+                tile.addEventListener('mousedown', startDrawing);
+                tile.addEventListener('mousemove', draw);
+                tile.addEventListener('mouseup', stopDrawing);
+            }
+            
+            editor.appendChild(tile);
+        }
+
+        function selectTile(index) {
+            selectedTile = index;
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const tile = e.target;
+            const row = parseInt(tile.dataset.row);
+            const col = parseInt(tile.dataset.col);
+            if (tile.classList.contains('uneditable')) return;
+
+            if (selectedTile === 4 && specialTileCount === 0) {
+                //alert("No more special tiles available!");
+                return;
+            }
+
+            if (selectedTile === -1) {
+                tile.style.backgroundImage = '';
+                tile.textContent = '';
+                if (level[row][col] === 5) specialTileCount++;
+                level[row][col] = 0;
+            } else {
+                if (selectedTile === 4) {
+                    if (specialTileCount > 0) {
+                        specialTileCount--;
+                    } else {
+                        return;
+                    }
+                }
+                tile.style.backgroundImage = `url('${tileImages[selectedTile]}')`;
+                tile.textContent = '';
+                if (level[row][col] === 5) specialTileCount++;
+                level[row][col] = selectedTile + 1;
+            }
+            updateSpecialTileCount();
+        }
+
+        function exportLevel() {
+            level[9][8]='a';
+            let str = level.map(row => row.join('')).join('');
+            str = str.replaceAll("5", "a");
+            output.value = str;
+        }
+
+        function clearAll() {
+            level.forEach((row, i) => row.forEach((_, j) => {
+                if (!document.querySelector(`.tile[data-row="${i}"][data-col="${j}"]`).classList.contains('uneditable')) {
+                    level[i][j] = 0;
+                    document.querySelector(`.tile[data-row="${i}"][data-col="${j}"]`).style.backgroundImage = '';
+                    document.querySelector(`.tile[data-row="${i}"][data-col="${j}"]`).textContent = '';
+                }
+            }));
+            specialTileCount = 1;
+            updateSpecialTileCount();
+        }
+
+        function updateSpecialTileCount() {
+            specialTileCountDisplay.textContent = `Special Tile: ${specialTileCount} remaining`;
+        }
+
+        // Initialize editor
+        for (let row = 0; row < 10; row++) {
+            for (let col = 0; col < 18; col++) {
+                createTile(row, col);
+            }
+        }
+
+        // Prevent text selection while dragging
+        editor.addEventListener('dragstart', e => e.preventDefault());
+    </script>
+</body>
+</html>
