@@ -53,6 +53,7 @@
 </head>
 <body>
     <h1>Mini Tank Game Level Editor</h1>
+    <a href="https://retro6502.itch.io/mini-tank-free"> Mini Tank Free on Itch </a>
     <div id="tools">
         <button onclick="selectTile(0)">Damaged Steel</button>
         <button onclick="selectTile(1)">Brick</button>
@@ -61,12 +62,19 @@
         <!--button onclick="selectTile(4)">Home</button-->
         <!--span id="specialTileCount">Special Tile: 1 remaining</span-->
         <button onclick="selectTile(-1)">Eraser</button>
-        <button onclick="exportLevel()">Export Level</button>
         <button onclick="clearAll()">Clear All</button>
     </div>
     <div id="editor"></div>
+    <br>
+    <div>        <button onclick="exportLevel()">Export Level</button>Level Data:</div>
     <textarea id="output" readonly></textarea>
-
+    <div>
+    <h2>	How to create customized levels:</h2>
+ 1. Create the level here <br>
+ 2. Put the exported level data into level1.dat or level2.dat <br>
+ 3. Copy level1.dat or level2.dat to Playdate folder: Data\com.retro6502.minitank_demo\ <br>
+ 4. The levels will be loaded after restart the game <br>
+    </div>
     <script>
         const editor = document.getElementById('editor');
         const output = document.getElementById('output');
